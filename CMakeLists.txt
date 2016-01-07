@@ -23,7 +23,7 @@ include_directories(${LLVM_INCLUDE_DIRS})
 add_definitions(${LLVM_DEFINITIONS})
 
 add_subdirectory (lib)
-add_subdirectory (unittest)
+#add_subdirectory (unittest)
 
-enable_testing ()
-add_test (AndersTest ${PROJECT_BINARY_DIR}/unittest/AndersTest)
+#enable_testing ()
+#add_test (AndersTest ${PROJECT_BINARY_DIR}/unittest/AndersTest)

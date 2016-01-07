@@ -12,7 +12,7 @@ cl::opt<bool> DumpConstraintInfo("dump-cons", cl::desc("Dump constraint info int
 
 void Andersen::getAnalysisUsage(AnalysisUsage &AU) const
 {
-	AU.addRequired<DataLayoutPass>();
+	//AU.addRequired<DataLayoutPass>();
 	AU.setPreservesAll();
 }
 
@@ -51,7 +51,8 @@ bool Andersen::getPointsToSet(const llvm::Value* v, std::vector<const llvm::Valu
 
 bool Andersen::runOnModule(Module &M)
 {
-	dataLayout = &(getAnalysis<DataLayoutPass>().getDataLayout());
+	//dataLayout = &(getAnalysis<DataLayoutPass>().getDataLayout());
+	dataLayout = &M.getDataLayout();
 	nodeFactory.setDataLayout(dataLayout);
 
 	collectConstraints(M);
@@ -76,9 +77,9 @@ bool Andersen::runOnModule(Module &M)
 	{
 		nodeFactory.dumpNodeInfo();
 		errs() << "\n";
-		dumpPtsGraphPlainVanilla();	
+		dumpPtsGraphPlainVanilla();
 	}
-	
+
 
 	return false;
 }

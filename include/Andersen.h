@@ -53,6 +53,7 @@
 #include "llvm/IR/DataLayout.h"
 #include "llvm/IR/CallSite.h"
 #include "llvm/ADT/DenseMap.h"
+#include "llvm/IR/Module.h"
 
 #include <vector>
 

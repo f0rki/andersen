@@ -9,28 +9,28 @@ static inline bool isSetContainingOnly(const AndersPtsSet& set, NodeIndex i)
 	return (set.getSize() == 1) && (*set.begin() == i);
 }
 
-AliasAnalysis::AliasResult AndersenAA::andersenAlias(const llvm::Value* v1, const llvm::Value* v2)
+AliasResult AndersenAA::andersenAlias(const llvm::Value* v1, const llvm::Value* v2)
 {
 	NodeIndex n1 = (anders->nodeFactory).getMergeTarget((anders->nodeFactory).getValueNodeFor(v1));
 	NodeIndex n2 = (anders->nodeFactory).getMergeTarget((anders->nodeFactory).getValueNodeFor(v2));
 
 	if (n1 == n2)
-		return AliasAnalysis::MustAlias;
+		return MustAlias;
 
 	auto itr1 = (anders->ptsGraph).find(n1), itr2 = (anders->ptsGraph).find(n2);
 	if (itr1 == (anders->ptsGraph).end() || itr2 == (anders->ptsGraph).end())
 		// We knows nothing about at least one of (v1, v2)
-		return AliasAnalysis::MayAlias;
+		return MayAlias;
 
 	AndersPtsSet& s1 = itr1->second, s2 = itr2->second;
 	bool isNull1 = isSetContainingOnly(s1, (anders->nodeFactory).getNullObjectNode());
 	bool isNull2 = isSetContainingOnly(s2, (anders->nodeFactory).getNullObjectNode());
 	if (isNull1 || isNull2)
 		// If any of them is null, we know that they must not alias each other
-		return AliasAnalysis::NoAlias;
+		return NoAlias;
 
 	if (s1.getSize() == 1 && s2.getSize() == 1 && *s1.begin() == *s2.begin())
-		return AliasAnalysis::MustAlias;
+		return MustAlias;
 
 	// Compute the intersection of s1 and s2
 	for (auto const& idx: s1)
@@ -38,13 +38,13 @@ AliasAnalysis::AliasResult AndersenAA::andersenAlias(const llvm::Value* v1, cons
 		if (idx == (anders->nodeFactory).getNullObjectNode())
 			continue;
 		if (s2.has(idx))
-			return AliasAnalysis::MayAlias;
+			return MayAlias;
 	}
 
-	return AliasAnalysis::NoAlias;
+	return NoAlias;
 }
 
-AliasAnalysis::AliasResult AndersenAA::alias(const AliasAnalysis::Location& l1, const AliasAnalysis::Location& l2)
+AliasResult AndersenAA::alias(const MemoryLocation& l1, const MemoryLocation& l2)
 {
 	if (l1.Size == 0 || l2.Size == 0)
 		return NoAlias;
@@ -87,7 +87,7 @@ void AndersenAA::copyValue(llvm::Value* from, llvm::Value* to)
 	(anders->ptsGraph)[toNode] = fromItr->second;
 }
 
-bool AndersenAA::pointsToConstantMemory(const Location& loc, bool orLocal)
+bool AndersenAA::pointsToConstantMemory(const MemoryLocation& loc, bool orLocal)
 {
 	NodeIndex node = (anders->nodeFactory).getValueNodeFor(loc.Ptr);
 	if (node == AndersNodeFactory::InvalidIndex)
@@ -120,7 +120,7 @@ void AndersenAA::getAnalysisUsage(AnalysisUsage &AU) const
 {
 	AliasAnalysis::getAnalysisUsage(AU);
 	AU.addRequired<Andersen>();
-	AU.addRequired<DataLayoutPass>();
+	//AU.addRequired<DataLayoutPass>();
 	AU.setPreservesAll();
 }
 
@@ -133,10 +133,11 @@ void* AndersenAA::getAdjustedAnalysisPointer(AnalysisID PI)
 
 bool AndersenAA::runOnModule(Module &M)
 {
-	InitializeAliasAnalysis(this);
+  InitializeAliasAnalysis(this, &M.getDataLayout());
 
 	anders = &getAnalysis<Andersen>();
-	dataLayout = &(getAnalysis<DataLayoutPass>().getDataLayout());
+	//dataLayout = &(getAnalysis<DataLayoutPass>().getDataLayout());
+	dataLayout = &(M.getDataLayout());
 
 	return false;
 }
