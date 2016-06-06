@@ -36,7 +36,6 @@ public:
 	bool runOnModule(llvm::Module&) override;
 	//bool doFinalization(llvm::Module&) override;
 	void getAnalysisUsage(llvm::AnalysisUsage &AU) const override;
-	void* getAdjustedAnalysisPointer(llvm::AnalysisID PI) override;
 };
 
 #endif

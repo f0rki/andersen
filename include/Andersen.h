@@ -54,6 +54,8 @@
 #include "llvm/ADT/DenseMap.h"
 #include "llvm/IR/Module.h"
 
+#include "llvm/Pass.h"
+
 #include <vector>
 
 class Andersen
@@ -104,6 +106,39 @@ public:
 	void getAllAllocationSites(std::vector<const llvm::Value*>& allocSites) const;
 
 	friend class AndersenAAResult;
+};
+
+
+class AndersenPtsTo : public llvm::ModulePass
+{
+private:
+  Andersen* anders;
+
+public:
+	static char ID;
+
+	AndersenPtsTo(): llvm::ModulePass(ID) {}
+
+  void releaseMemory() {
+    delete anders;
+  }
+
+  void getAnalysisUsage(llvm::AnalysisUsage &AU) const {
+    AU.setPreservesAll();
+  }
+
+  bool runOnModule(llvm::Module& M) {
+    anders = new Andersen(M);
+    return false;
+  }
+
+  bool getPointsToSet(const llvm::Value* v, std::vector<const llvm::Value*>& ptsSet) const {
+    return anders->getPointsToSet(v, ptsSet);
+  }
+
+  void getAllAllocationSites(std::vector<const llvm::Value*>& allocSites) const {
+    return anders->getAllAllocationSites(allocSites);
+  }
 };
 
 #endif

@@ -11,12 +11,6 @@ cl::opt<bool> DumpDebugInfo("dump-debug", cl::desc("Dump debug info into stderr"
 cl::opt<bool> DumpResultInfo("dump-result", cl::desc("Dump result info into stderr"), cl::init(false), cl::Hidden);
 cl::opt<bool> DumpConstraintInfo("dump-cons", cl::desc("Dump constraint info into stderr"), cl::init(false), cl::Hidden);
 
-void Andersen::getAnalysisUsage(AnalysisUsage &AU) const
-{
-	AU.addRequired<DataLayoutPass>();
-	AU.setPreservesAll();
-}
-
 void Andersen::getAllAllocationSites(std::vector<const llvm::Value*>& allocSites) const
 {
 	nodeFactory.getAllocSites(allocSites);
@@ -50,11 +44,8 @@ bool Andersen::getPointsToSet(const llvm::Value* v, std::vector<const llvm::Valu
 	return true;
 }
 
-bool Andersen::runOnModule(Module &M)
+bool Andersen::runOnModule(const Module &M)
 {
-	dataLayout = &(getAnalysis<DataLayoutPass>().getDataLayout());
-	nodeFactory.setDataLayout(dataLayout);
-
 	collectConstraints(M);
 
 	if (DumpDebugInfo)
@@ -82,10 +73,6 @@ bool Andersen::runOnModule(Module &M)
 
 
 	return false;
-}
-
-void Andersen::releaseMemory()
-{
 }
 
 void Andersen::dumpConstraint(const AndersConstraint& item) const
@@ -160,6 +147,7 @@ void Andersen::dumpPtsGraphPlainVanilla() const
 	}
 }
 
-char Andersen::ID = 0;
-static RegisterPass<Andersen> X("anders", "Andersen's inclusion-based points-to analysis", true, true);
 
+// register Anders points-to analysis wrapper pass
+char AndersenPtsTo::ID = 0;
+static RegisterPass<AndersenPtsTo> X("anders", "Andersen's inclusion-based points-to analysis", true, true);
