@@ -37,7 +37,7 @@ void Andersen::collectConstraints(Module& M)
 			continue;
 
 		// Scan the function body
-		// A visitor pattern might help modularity, but it needs more boilerplate codes to set up, and it breaks down the main logic into pieces 
+		// A visitor pattern might help modularity, but it needs more boilerplate codes to set up, and it breaks down the main logic into pieces
 
 		// First, create a value node for each instruction with pointer type. It is necessary to do the job here rather than on-the-fly because an instruction may refer to the value node definied before it (e.g. phi nodes)
 		for (const_inst_iterator itr = inst_begin(f), ite = inst_end(f); itr != ite; ++itr)
@@ -246,7 +246,7 @@ void Andersen::collectConstraintsForInstruction(const Instruction* inst)
 		case Instruction::IntToPtr:
 		{
 			assert(inst->getType()->isPointerTy());
-			
+
 			// Get the node index for dst
 			NodeIndex dstIndex = nodeFactory.getValueNodeFor(inst);
 			assert(dstIndex != AndersNodeFactory::InvalidIndex && "Failed to find inttoptr dst node");
@@ -263,7 +263,7 @@ void Andersen::collectConstraintsForInstruction(const Instruction* inst)
 				constraints.emplace_back(AndersConstraint::COPY, dstIndex, srcIndex);
 				break;
 			}
-			
+
 			// Pointer arithmetic: Y = inttoptr (ptrtoint (X) + offset)
 			if (PatternMatch::match(op,
 				PatternMatch::m_Add(
@@ -276,7 +276,7 @@ void Andersen::collectConstraintsForInstruction(const Instruction* inst)
 				constraints.emplace_back(AndersConstraint::COPY, dstIndex, srcIndex);
 				break;
 			}
-			
+
 			// Otherwise, we really don't know what dst points to
 			constraints.emplace_back(AndersConstraint::COPY, dstIndex, nodeFactory.getUniversalPtrNode());
 
@@ -309,6 +309,31 @@ void Andersen::collectConstraintsForInstruction(const Instruction* inst)
 			}
 			break;
 		}
+		// Atomic instructions can be modeled by their non-atomic counterparts. To be supported
+		case Instruction::AtomicCmpXchg:
+    {
+			if (inst->getOperand(0)->getType()->isPointerTy() && inst->getOperand(2)->getType()->isPointerTy())
+			{
+        //errs() << "AtomicCmpXchg inst:\n" << *inst
+        //  << "\n 0 - " << *inst->getOperand(0)
+        //  << "\n 1 - " << *inst->getOperand(1)
+        //  << "\n 2 - " << *inst->getOperand(2) << "\n";
+				NodeIndex srcIndex = nodeFactory.getValueNodeFor(inst->getOperand(0));
+				assert(srcIndex != AndersNodeFactory::InvalidIndex && "Failed to find AtomicCmpXchg src node");
+				NodeIndex dstIndex = nodeFactory.getValueNodeFor(inst->getOperand(2));
+				assert(dstIndex != AndersNodeFactory::InvalidIndex && "Failed to find AtomicCmpXchg dst node");
+				constraints.emplace_back(AndersConstraint::STORE, dstIndex, srcIndex);
+			}
+			break;
+    }
+		case Instruction::AtomicRMW:
+		{
+      //http://llvm.org/docs/Atomics.html
+      //http://llvm.org/docs/doxygen/html/classllvm_1_1AtomicRMWInst.html
+			errs() << *inst << "\n";
+			assert(false && "not implemented yet");
+      break;
+		}
 		case Instruction::ExtractValue:
 		case Instruction::InsertValue:
 		{
@@ -318,17 +343,12 @@ void Andersen::collectConstraintsForInstruction(const Instruction* inst)
 		// We have no intention to support exception-handling in the near future
 		case Instruction::LandingPad:
 		case Instruction::Resume:
-		// Atomic instructions can be modeled by their non-atomic counterparts. To be supported
-		case Instruction::AtomicRMW:
-		case Instruction::AtomicCmpXchg:
-		{
-			errs() << *inst << "\n";
-			assert(false && "not implemented yet");
-		}
 		default:
 		{
-			errs() << *inst << "\n";
-			assert(!inst->getType()->isPointerTy() && "pointer-related inst not handled!");
+      if (inst->getType()->isPointerTy()) {
+        errs() << *inst << "\n";
+        assert(false && "pointer-related inst not handled!");
+      }
 			break;
 		}
 	}
@@ -345,8 +365,10 @@ void Andersen::addConstraintForCall(ImmutableCallSite cs)
 		{
 			// Handle libraries separately
 			if (addConstraintForExternalLibrary(cs, f))
+      {
 				return;
-			else	// Unresolved library call: ruin everything!
+			}
+      else	// Unresolved library call: ruin everything!
 			{
 				errs() << "Unresolved ext function: " << f->getName() << "\n";
 				if (cs.getType()->isPointerTy())

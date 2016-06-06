@@ -25,13 +25,13 @@ static const char* noopFuncs[] = {
 	"isgraph", "islower", "isprint", "ispunct", "isspace", "isupper", "iswalnum",
 	"iswalpha", "iswctype", "iswdigit", "iswlower", "iswspace", "iswprint",
 	"iswupper", "sin", "cos", "sinf", "cosf", "asin", "acos", "tan", "atan",
-	"fabs", "pow", "floor", "ceil", "sqrt", "sqrtf", "hypot", 
+	"fabs", "pow", "floor", "ceil", "sqrt", "sqrtf", "hypot",
 	"random", "tolower","toupper", "towlower", "towupper", "system", "clock",
 	"exit", "abort", "gettimeofday", "settimeofday", "sleep", "ctime",
 	"strspn", "strcspn", "localtime", "strftime",
 	"qsort", "popen", "pclose",
 	"rand", "rand_r", "srand", "seed48", "drand48", "lrand48", "srand48",
-	"__isoc99_sscanf", "__isoc99_fscanf", "fclose", "close", "perror", 
+	"__isoc99_sscanf", "__isoc99_fscanf", "fclose", "close", "perror",
 	"strerror", // this function returns an extenal static pointer
 	"__errno_location", "__ctype_b_loc", "abs", "difftime", "setbuf",
 	"_ZdlPv", "_ZdaPv",	// delete and delete[]
@@ -40,6 +40,7 @@ static const char* noopFuncs[] = {
 	"llvm.lifetime.start", "llvm.lifetime.end", "llvm.stackrestore",
 	"memset", "llvm.memset.i32", "llvm.memset.p0i8.i32", "llvm.memset.i64",
 	"llvm.memset.p0i8.i64", "llvm.va_end",
+  "llvm.dbg.value", "llvm.dbg.declare",
 	// The following functions might not be NOOP. They need to be removed from this list in the future
 	"setrlimit", "getrlimit",
 	nullptr
@@ -47,8 +48,8 @@ static const char* noopFuncs[] = {
 
 static const char* mallocFuncs[] = {
 	"malloc", "valloc", "calloc",
-	"_Znwj", "_ZnwjRKSt9nothrow_t", "_Znwm", "_ZnwmRKSt9nothrow_t", 
-	"_Znaj", "_ZnajRKSt9nothrow_t", "_Znam", "_ZnamRKSt9nothrow_t", 
+	"_Znwj", "_ZnwjRKSt9nothrow_t", "_Znwm", "_ZnwmRKSt9nothrow_t",
+	"_Znaj", "_ZnajRKSt9nothrow_t", "_Znam", "_ZnamRKSt9nothrow_t",
 	"strdup", "strndup",
 	"getenv",
 	"memalign", "posix_memalign",
@@ -138,10 +139,10 @@ bool Andersen::addConstraintForExternalLibrary(ImmutableCallSite cs, const Funct
 		}
 		else
 		{
-			// Normal malloc-like call 
+			// Normal malloc-like call
 			constraints.emplace_back(AndersConstraint::ADDR_OF, ptrIndex, objIndex);
 		}
-		
+
 		return true;
 	}
 
@@ -180,7 +181,7 @@ bool Andersen::addConstraintForExternalLibrary(ImmutableCallSite cs, const Funct
 		NodeIndex arg0Index = nodeFactory.getValueNodeFor(cs.getArgument(0));
 		assert(arg0Index != AndersNodeFactory::InvalidIndex && "Failed to find arg0 node");
 		NodeIndex arg1Index = nodeFactory.getValueNodeFor(cs.getArgument(1));
-		assert(arg1Index != AndersNodeFactory::InvalidIndex && "Failed to find arg1 node");	
+		assert(arg1Index != AndersNodeFactory::InvalidIndex && "Failed to find arg1 node");
 
 		NodeIndex tempIndex = nodeFactory.createValueNode();
 		constraints.emplace_back(AndersConstraint::LOAD, tempIndex, arg1Index);
