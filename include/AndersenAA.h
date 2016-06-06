@@ -5,27 +5,36 @@
 
 #include "llvm/Pass.h"
 #include "llvm/Analysis/AliasAnalysis.h"
+#include "llvm/Analysis/TargetLibraryInfo.h"
 
-
-class AndersenAA: public llvm::ModulePass, public llvm::AliasAnalysis
+class AndersenAAResult: public llvm::AAResultBase<AndersenAAResult>
 {
 private:
-	Andersen* anders;
-	const llvm::DataLayout* dataLayout;
+	friend llvm::AAResultBase<AndersenAAResult>;
 
-  llvm::AliasResult andersenAlias(const llvm::Value* l1, const llvm::Value* l2);
+	Andersen anders;
+	llvm::AliasResult andersenAlias(const llvm::Value*, const llvm::Value*);
+public:
+	AndersenAAResult(const llvm::Module&, llvm::TargetLibraryInfo&);
+
+	llvm::AliasResult alias(const llvm::MemoryLocation&, const llvm::MemoryLocation&);
+	bool pointsToConstantMemory(const llvm::MemoryLocation&, bool);
+};
+
+class AndersenAAWrapperPass: public llvm::ModulePass
+{
+private:
+	std::unique_ptr<AndersenAAResult> result;
 public:
 	static char ID;
 
-	// Interfaces of AliasAnalysis.
-  llvm::AliasResult alias(const llvm::MemoryLocation& l1, const llvm::MemoryLocation& l2) override;
-	void deleteValue(llvm::Value* v) override;
-	void copyValue(llvm::Value* from, llvm::Value* to);
-	bool pointsToConstantMemory(const llvm::MemoryLocation& loc, bool orLocal) override;
-	//ModRefResult getModRefInfo (llvm::ImmutableCallSite cs, const Location &loc);
+	AndersenAAWrapperPass();
 
-	AndersenAA(): ModulePass(ID), anders(nullptr), dataLayout(nullptr) {}
-	bool runOnModule(llvm::Module &M) override;
+	AndersenAAResult& getResult() { return *result; }
+	const AndersenAAResult& getResult() const { return *result; }
+
+	bool runOnModule(llvm::Module&) override;
+	//bool doFinalization(llvm::Module&) override;
 	void getAnalysisUsage(llvm::AnalysisUsage &AU) const override;
 	void* getAdjustedAnalysisPointer(llvm::AnalysisID PI) override;
 };

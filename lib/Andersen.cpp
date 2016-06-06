@@ -1,6 +1,7 @@
 #include "Andersen.h"
 
 #include "llvm/ADT/Statistic.h"
+#include "llvm/IR/Module.h"
 #include "llvm/Support/raw_ostream.h"
 #include "llvm/Support/CommandLine.h"
 
@@ -12,7 +13,7 @@ cl::opt<bool> DumpConstraintInfo("dump-cons", cl::desc("Dump constraint info int
 
 void Andersen::getAnalysisUsage(AnalysisUsage &AU) const
 {
-	//AU.addRequired<DataLayoutPass>();
+	AU.addRequired<DataLayoutPass>();
 	AU.setPreservesAll();
 }
 
@@ -51,8 +52,7 @@ bool Andersen::getPointsToSet(const llvm::Value* v, std::vector<const llvm::Valu
 
 bool Andersen::runOnModule(Module &M)
 {
-	//dataLayout = &(getAnalysis<DataLayoutPass>().getDataLayout());
-	dataLayout = &M.getDataLayout();
+	dataLayout = &(getAnalysis<DataLayoutPass>().getDataLayout());
 	nodeFactory.setDataLayout(dataLayout);
 
 	collectConstraints(M);

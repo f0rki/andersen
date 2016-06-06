@@ -8,11 +8,11 @@
 #include "llvm/IR/Function.h"
 #include "llvm/IR/Module.h"
 #include "llvm/IR/InstIterator.h"
+#include "llvm/IR/PassManager.h"
 #include "llvm/Support/SourceMgr.h"
 #include "llvm/Support/ErrorHandling.h"
 #include "llvm/Support/raw_ostream.h"
 #include "llvm/Pass.h"
-#include "llvm/PassManager.h"
 #include "gtest/gtest.h"
 
 #include <memory>
@@ -160,10 +160,10 @@ TEST_F(AndersPassTest, NodeFactoryTest)
 	auto f = module->begin();
 	auto bb = f->begin();
 	auto itr = bb->begin();
-	auto x = itr;
-	auto y = ++itr;
-	auto z = ++itr;
-	auto w = ++itr;
+	auto x = &*itr;
+	auto y = &*++itr;
+	auto z = &*++itr;
+	auto w = &*++itr;
 
 	AndersNodeFactory factory;
 	auto vx = factory.createValueNode(x);

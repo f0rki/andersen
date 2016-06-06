@@ -57,13 +57,14 @@ static const char* mallocFuncs[] = {
 };
 
 static const char* reallocFuncs[] = {
-	"realloc", "strtok", "strtok_r", "getcwd",
+	"realloc", "strtok", "strtok_r",
 	nullptr
 };
 
 static const char* retArg0Funcs[] = {
 	"fgets", "gets", "stpcpy",  "strcat", "strchr", "strcpy",
 	"strerror_r", "strncat", "strncpy", "strpbrk", "strptime", "strrchr", "strstr",
+	"getcwd",
 	nullptr
 };
 
@@ -128,14 +129,17 @@ bool Andersen::addConstraintForExternalLibrary(ImmutableCallSite cs, const Funct
 		if (ptrIndex == AndersNodeFactory::InvalidIndex)
 		{
 			// Must be something like posix_memalign()
-			if (cs.getCalledFunction()->getName() == "posix_memalign")
+			if (f->getName() == "posix_memalign")
 			{
 				ptrIndex = nodeFactory.getValueNodeFor(cs.getArgument(0));
 				assert(ptrIndex != AndersNodeFactory::InvalidIndex && "Failed to find arg0 node");
 				constraints.emplace_back(AndersConstraint::STORE, ptrIndex, objIndex);
 			}
 			else
+			{
+				errs() << f->getName() << '\n';
 				assert(false && "unrecognized malloc call");
+			}
 		}
 		else
 		{
@@ -149,10 +153,13 @@ bool Andersen::addConstraintForExternalLibrary(ImmutableCallSite cs, const Funct
 	if (lookupName(retArg0Funcs, f->getName().data()) || (isReallocLike && isa<ConstantPointerNull>(cs.getArgument(0))))
 	{
 		NodeIndex retIndex = nodeFactory.getValueNodeFor(cs.getInstruction());
-		assert(retIndex != AndersNodeFactory::InvalidIndex && "Failed to find call site node");
-		NodeIndex arg0Index = nodeFactory.getValueNodeFor(cs.getArgument(0));
-		assert(arg0Index != AndersNodeFactory::InvalidIndex && "Failed to find arg0 node");
-		constraints.emplace_back(AndersConstraint::COPY, retIndex, arg0Index);
+		if (retIndex != AndersNodeFactory::InvalidIndex)
+		{
+			NodeIndex arg0Index = nodeFactory.getValueNodeFor(cs.getArgument(0));
+			assert(arg0Index != AndersNodeFactory::InvalidIndex && "Failed to find arg0 node");
+			constraints.emplace_back(AndersConstraint::COPY, retIndex, arg0Index);
+		}
+		
 		return true;
 	}
 
