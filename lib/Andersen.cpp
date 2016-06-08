@@ -11,6 +11,11 @@ cl::opt<bool> DumpDebugInfo("dump-debug", cl::desc("Dump debug info into stderr"
 cl::opt<bool> DumpResultInfo("dump-result", cl::desc("Dump result info into stderr"), cl::init(false), cl::Hidden);
 cl::opt<bool> DumpConstraintInfo("dump-cons", cl::desc("Dump constraint info into stderr"), cl::init(false), cl::Hidden);
 
+Andersen::Andersen(const Module& module)
+{
+  runOnModule(module);
+}
+
 void Andersen::getAllAllocationSites(std::vector<const llvm::Value*>& allocSites) const
 {
 	nodeFactory.getAllocSites(allocSites);
