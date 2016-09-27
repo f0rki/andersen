@@ -41,6 +41,7 @@ static const char* noopFuncs[] = {
 	"memset", "llvm.memset.i32", "llvm.memset.p0i8.i32", "llvm.memset.i64",
 	"llvm.memset.p0i8.i64", "llvm.va_end",
   "llvm.dbg.value", "llvm.dbg.declare",
+  "fopen64", "fchown", "fchmod", "__xstat64", "__lxstat64", "open64", "utime",
 	// The following functions might not be NOOP. They need to be removed from this list in the future
 	"setrlimit", "getrlimit",
 	nullptr
@@ -159,7 +160,7 @@ bool Andersen::addConstraintForExternalLibrary(ImmutableCallSite cs, const Funct
 			assert(arg0Index != AndersNodeFactory::InvalidIndex && "Failed to find arg0 node");
 			constraints.emplace_back(AndersConstraint::COPY, retIndex, arg0Index);
 		}
-		
+
 		return true;
 	}
 
