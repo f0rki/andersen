@@ -334,15 +334,35 @@ void Andersen::collectConstraintsForInstruction(const Instruction* inst)
 			assert(false && "not implemented yet");
       break;
 		}
+		// We have no intention to support exception-handling in the near future
+		case Instruction::LandingPad:
+		case Instruction::Resume:
+    {
+      errs() << *inst << "\n";
+      llvm_unreachable("Exception handling is not supported!");
+      break;
+    }
 		case Instruction::ExtractValue:
+		{
+			if (inst->getType()->isPointerTy()) {
+
+        // P1 = getelementptr P2, ... --> <Copy/P1/P2>
+        errs() << "ExtractValue\n"  << *inst << "\n" << *inst->getOperand(0) << "\n";
+        NodeIndex srcIndex = nodeFactory.getValueNodeFor(inst->getOperand(0));
+        assert(srcIndex != AndersNodeFactory::InvalidIndex && "Failed to find extractvalue src node");
+        NodeIndex dstIndex = nodeFactory.getValueNodeFor(inst);
+        assert(dstIndex != AndersNodeFactory::InvalidIndex && "Failed to find extractvalue dst node");
+
+        constraints.emplace_back(AndersConstraint::COPY, dstIndex, srcIndex);
+      }
+
+			break;
+		}
 		case Instruction::InsertValue:
 		{
 			if (!inst->getType()->isPointerTy())
 				break;
 		}
-		// We have no intention to support exception-handling in the near future
-		case Instruction::LandingPad:
-		case Instruction::Resume:
 		default:
 		{
 			if (inst->getType()->isPointerTy())
