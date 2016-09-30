@@ -336,8 +336,16 @@ void Andersen::collectConstraintsForInstruction(const Instruction* inst)
 		}
 		// We have no intention to support exception-handling in the near future
 		case Instruction::LandingPad:
-		case Instruction::Resume:
+    case Instruction::Resume:
     {
+      errs() << "detected exception handling related instruction:\n";
+      auto M = inst->getModule();
+      errs() << "inside module " << M->getName();
+      auto F = inst->getParent()->getParent();
+      if (F) {
+        errs() << " function " << F->getName() << "\n";
+      }
+      errs() << "\n";
       errs() << *inst << "\n";
       llvm_unreachable("Exception handling is not supported!");
       break;
@@ -367,8 +375,16 @@ void Andersen::collectConstraintsForInstruction(const Instruction* inst)
 		{
 			if (inst->getType()->isPointerTy())
 			{
-				errs() << *inst << "\n";
-				llvm_unreachable("pointer-related inst not handled!");
+        errs() << "detected unhandled pointer-related instruction:\n";
+        auto M = inst->getModule();
+        errs() << "inside module " << M->getName();
+        auto F = inst->getParent()->getParent();
+        if (F) {
+          errs() << " function " << F->getName() << "\n";
+        }
+        errs() << "\n";
+        errs() << *inst << "\n";
+        llvm_unreachable("pointer-related inst not handled!");
 			}
 			break;
 		}
