@@ -398,7 +398,7 @@ void Andersen::addConstraintForCall(ImmutableCallSite cs)
 {
 	if (const Function* f = cs.getCalledFunction())	// Direct call
 	{
-		if (f->isDeclaration() || f->isIntrinsic())	// External library call
+		if (f->isDeclaration() || f->isIntrinsic() || isAllocatorCall(cs))	// External library call
 		{
 			// Handle libraries separately
 			if (addConstraintForExternalLibrary(cs, f))

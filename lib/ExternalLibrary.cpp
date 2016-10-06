@@ -12,6 +12,23 @@
 
 using namespace llvm;
 
+bool Andersen::isAllocatorCall(llvm::ImmutableCallSite cs) {
+  const llvm::Function* F = cs.getCalledFunction();
+  if (F && F->getName().size() > 0) {
+    auto fml = FunctionModelLookup::get(F->getName().data(), F->getName().size());
+
+    if (! fml) {
+      errs() << "Unkown external function: " << F->getName() << "(in module " <<
+        F->getParent()->getName() << ")\n";
+      return false;
+    }
+
+    FunctionModel fm = fml->model;
+    return fm == FunctionModel::MALLOC_LIKE || fm == FunctionModel::REALLOC_LIKE;
+  }
+  return false;
+}
+
 
 // This function identifies if the external callsite is a library function call, and add constraint
 // correspondingly If this is a call to a "known" function, add the constraints and return true. If
@@ -19,7 +36,7 @@ using namespace llvm;
 bool Andersen::addConstraintForExternalLibrary(ImmutableCallSite cs, const Function* F)
 {
   assert(F != nullptr && "called function is nullptr!");
-  assert((F->isDeclaration() || F->isIntrinsic()) && "Not an external function!");
+  //assert((F->isDeclaration() || F->isIntrinsic()) && "Not an external function!");
 
   auto fml = FunctionModelLookup::get(F->getName().data(), F->getName().size());
 

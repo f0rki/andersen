@@ -81,6 +81,7 @@ private:
 	void addGlobalInitializerConstraints(NodeIndex, const llvm::Constant*);
 	void addConstraintForCall(llvm::ImmutableCallSite cs);
 	bool addConstraintForExternalLibrary(llvm::ImmutableCallSite cs, const llvm::Function* f);
+	bool isAllocatorCall(llvm::ImmutableCallSite cs);
 	void addArgumentConstraintForCall(llvm::ImmutableCallSite cs, const llvm::Function* f);
 
 	// Helper functions for constraint optimization
