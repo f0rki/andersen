@@ -18,8 +18,6 @@ bool Andersen::isAllocatorCall(llvm::ImmutableCallSite cs) {
     auto fml = FunctionModelLookup::get(F->getName().data(), F->getName().size());
 
     if (! fml) {
-      errs() << "Unkown external function: " << F->getName() << "(in module " <<
-        F->getParent()->getName() << ")\n";
       return false;
     }
 
