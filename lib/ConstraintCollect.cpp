@@ -311,13 +311,13 @@ void Andersen::collectConstraintsForInstruction(const Instruction* inst)
 		}
 		// Atomic instructions can be modeled by their non-atomic counterparts. To be supported
 		case Instruction::AtomicCmpXchg:
-    {
+		{
 			if (inst->getOperand(0)->getType()->isPointerTy() && inst->getOperand(2)->getType()->isPointerTy())
 			{
-        //errs() << "AtomicCmpXchg inst:\n" << *inst
-        //  << "\n 0 - " << *inst->getOperand(0)
-        //  << "\n 1 - " << *inst->getOperand(1)
-        //  << "\n 2 - " << *inst->getOperand(2) << "\n";
+				//errs() << "AtomicCmpXchg inst:\n" << *inst
+				//	<< "\n 0 - " << *inst->getOperand(0)
+				//	<< "\n 1 - " << *inst->getOperand(1)
+				//	<< "\n 2 - " << *inst->getOperand(2) << "\n";
 				NodeIndex srcIndex = nodeFactory.getValueNodeFor(inst->getOperand(0));
 				assert(srcIndex != AndersNodeFactory::InvalidIndex && "Failed to find AtomicCmpXchg src node");
 				NodeIndex dstIndex = nodeFactory.getValueNodeFor(inst->getOperand(2));
@@ -325,44 +325,44 @@ void Andersen::collectConstraintsForInstruction(const Instruction* inst)
 				constraints.emplace_back(AndersConstraint::STORE, dstIndex, srcIndex);
 			}
 			break;
-    }
+		}
 		case Instruction::AtomicRMW:
 		{
-      //http://llvm.org/docs/Atomics.html
-      //http://llvm.org/docs/doxygen/html/classllvm_1_1AtomicRMWInst.html
+			//http://llvm.org/docs/Atomics.html
+			//http://llvm.org/docs/doxygen/html/classllvm_1_1AtomicRMWInst.html
 			errs() << *inst << "\n";
 			assert(false && "not implemented yet");
-      break;
+			break;
 		}
 		// We have no intention to support exception-handling in the near future
 		case Instruction::LandingPad:
-    case Instruction::Resume:
-    {
-      errs() << "detected exception handling related instruction:\n";
-      auto M = inst->getModule();
-      errs() << "inside module " << M->getName();
-      auto F = inst->getParent()->getParent();
-      if (F) {
-        errs() << " function " << F->getName() << "\n";
-      }
-      errs() << "\n";
-      errs() << *inst << "\n";
-      llvm_unreachable("Exception handling is not supported!");
-      break;
-    }
+		case Instruction::Resume:
+		{
+			errs() << "detected exception handling related instruction:\n";
+			auto M = inst->getModule();
+			errs() << "inside module " << M->getName();
+			auto F = inst->getParent()->getParent();
+			if (F) {
+				errs() << " function " << F->getName() << "\n";
+			}
+			errs() << "\n";
+			errs() << *inst << "\n";
+			llvm_unreachable("Exception handling is not supported!");
+			break;
+		}
 		case Instruction::ExtractValue:
 		{
 			if (inst->getType()->isPointerTy()) {
 
-        // P1 = getelementptr P2, ... --> <Copy/P1/P2>
-        errs() << "ExtractValue\n"  << *inst << "\n" << *inst->getOperand(0) << "\n";
-        NodeIndex srcIndex = nodeFactory.getValueNodeFor(inst->getOperand(0));
-        assert(srcIndex != AndersNodeFactory::InvalidIndex && "Failed to find extractvalue src node");
-        NodeIndex dstIndex = nodeFactory.getValueNodeFor(inst);
-        assert(dstIndex != AndersNodeFactory::InvalidIndex && "Failed to find extractvalue dst node");
+				// P1 = getelementptr P2, ... --> <Copy/P1/P2>
+				errs() << "ExtractValue\n"	<< *inst << "\n" << *inst->getOperand(0) << "\n";
+				NodeIndex srcIndex = nodeFactory.getValueNodeFor(inst->getOperand(0));
+				assert(srcIndex != AndersNodeFactory::InvalidIndex && "Failed to find extractvalue src node");
+				NodeIndex dstIndex = nodeFactory.getValueNodeFor(inst);
+				assert(dstIndex != AndersNodeFactory::InvalidIndex && "Failed to find extractvalue dst node");
 
-        constraints.emplace_back(AndersConstraint::COPY, dstIndex, srcIndex);
-      }
+				constraints.emplace_back(AndersConstraint::COPY, dstIndex, srcIndex);
+			}
 
 			break;
 		}
@@ -375,16 +375,16 @@ void Andersen::collectConstraintsForInstruction(const Instruction* inst)
 		{
 			if (inst->getType()->isPointerTy())
 			{
-        errs() << "detected unhandled pointer-related instruction:\n";
-        auto M = inst->getModule();
-        errs() << "inside module " << M->getName();
-        auto F = inst->getParent()->getParent();
-        if (F) {
-          errs() << " function " << F->getName() << "\n";
-        }
-        errs() << "\n";
-        errs() << *inst << "\n";
-        llvm_unreachable("pointer-related inst not handled!");
+				errs() << "detected unhandled pointer-related instruction:\n";
+				auto M = inst->getModule();
+				errs() << "inside module " << M->getName();
+				auto F = inst->getParent()->getParent();
+				if (F) {
+					errs() << " function " << F->getName() << "\n";
+				}
+				errs() << "\n";
+				errs() << *inst << "\n";
+				llvm_unreachable("pointer-related inst not handled!");
 			}
 			break;
 		}
@@ -402,10 +402,10 @@ void Andersen::addConstraintForCall(ImmutableCallSite cs)
 		{
 			// Handle libraries separately
 			if (addConstraintForExternalLibrary(cs, f))
-      {
+			{
 				return;
 			}
-      else	// Unresolved library call: ruin everything!
+			else	// Unresolved library call: ruin everything!
 			{
 				errs() << "Unresolved ext function: " << f->getName() << "\n";
 				if (cs.getType()->isPointerTy())
@@ -485,7 +485,9 @@ void Andersen::addConstraintForCall(ImmutableCallSite cs)
 				}
 			}
 			else
+			{
 				addArgumentConstraintForCall(cs, &f);
+			}
 		}
 	}
 }
