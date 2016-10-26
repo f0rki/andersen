@@ -503,14 +503,21 @@ void Andersen::addArgumentConstraintForCall(ImmutableCallSite cs, const Function
 		{
 			NodeIndex fIndex = nodeFactory.getValueNodeFor(formal);
 			assert(fIndex != AndersNodeFactory::InvalidIndex && "Failed to find formal arg node!");
-			if (actual->getType()->isPointerTy())
+			if (actual->getType()->isPointerTy() && !formal->hasByValAttr())
 			{
 				NodeIndex aIndex = nodeFactory.getValueNodeFor(actual);
 				assert(aIndex != AndersNodeFactory::InvalidIndex && "Failed to find actual arg node!");
 				constraints.emplace_back(AndersConstraint::COPY, fIndex, aIndex);
 			}
+			else if (formal->hasByValAttr()) {
+				// we have to deal with byval arguments the same way as allocas
+				NodeIndex objNode = nodeFactory.createObjectNode(formal);
+				constraints.emplace_back(AndersConstraint::ADDR_OF, fIndex, objNode);
+			}
 			else
+			{
 				constraints.emplace_back(AndersConstraint::COPY, fIndex, nodeFactory.getUniversalPtrNode());
+			}
 		}
 
 		++fItr, ++aItr;
