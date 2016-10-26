@@ -513,7 +513,10 @@ void Andersen::addArgumentConstraintForCall(ImmutableCallSite cs, const Function
 			}
 			else if (formal->hasByValAttr()) {
 				// we have to deal with byval arguments the same way as allocas
-				NodeIndex objNode = nodeFactory.createObjectNode(formal);
+				NodeIndex objNode = nodeFactory.getObjectNodeFor(formal);
+				if (objNode == AndersNodeFactory::InvalidIndex) {
+					objNode = nodeFactory.createObjectNode(formal);
+				}
 				constraints.emplace_back(AndersConstraint::ADDR_OF, fIndex, objNode);
 			}
 			else
