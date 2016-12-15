@@ -72,6 +72,7 @@ rewind, FunctionModel::NOOP
 ftell, FunctionModel::NOOP
 ferror, FunctionModel::NOOP
 fgetc, FunctionModel::NOOP
+getchar, FunctionModel::NOOP
 _IO_getc, FunctionModel::NOOP
 fwrite, FunctionModel::NOOP
 fread, FunctionModel::NOOP
