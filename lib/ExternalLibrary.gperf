@@ -262,10 +262,16 @@ strtoul, FunctionModel::CONVERT
 #### CGC specifics ####
 _terminate, FunctionModel::NOOP
 random, FunctionModel::NOOP
+cgc_random, FunctionModel::NOOP
 transmit, FunctionModel::NOOP
+cgc_transmit, FunctionModel::NOOP
 receive, FunctionModel::NOOP
+cgc_receive, FunctionModel::NOOP
 fdwait, FunctionModel::NOOP
+cgc_fdwait, FunctionModel::NOOP
 # we also consider these as NOOP, since we are interested 
 # in malloc granular objects, not in pages.
 allocate, FunctionModel::NOOP
+cgc_allocate, FunctionModel::NOOP
 deallocate, FunctionModel::NOOP
+cgc_deallocate, FunctionModel::NOOP
