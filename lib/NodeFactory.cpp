@@ -1,6 +1,7 @@
 #include "NodeFactory.h"
 
 #include "llvm/IR/Constants.h"
+#include "llvm/IR/GlobalAlias.h"
 #include "llvm/ADT/SmallVector.h"
 #include "llvm/Analysis/ValueTracking.h"
 #include "llvm/Support/raw_ostream.h"
@@ -126,6 +127,9 @@ NodeIndex AndersNodeFactory::getObjectNodeFor(const Value* val) const
 		if (!isa<GlobalValue>(c))
 			return getObjectNodeForConstant(c);
 
+	if (const GlobalAlias* a = dyn_cast<GlobalAlias>(val)) {
+		return getObjectNodeFor(a->getAliasee());
+	}
 	auto itr = objNodeMap.find(val);
 	if (itr == objNodeMap.end())
 		return InvalidIndex;
