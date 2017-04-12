@@ -143,6 +143,7 @@ towupper, FunctionModel::NOOP
 system, FunctionModel::NOOP
 clock, FunctionModel::NOOP
 exit, FunctionModel::NOOP
+__cxa_atexit, FunctionModel::NOOP
 abort, FunctionModel::NOOP
 gettimeofday, FunctionModel::NOOP
 settimeofday, FunctionModel::NOOP
