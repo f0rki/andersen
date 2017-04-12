@@ -217,6 +217,8 @@ strndup, FunctionModel::MALLOC_LIKE
 getenv, FunctionModel::MALLOC_LIKE
 memalign, FunctionModel::MALLOC_LIKE
 posix_memalign, FunctionModel::MALLOC_LIKE
+pvalloc, FunctionModel::MALLOC_LIKE
+aligned_alloc, FunctionModel::MALLOC_LIKE
 #### realloc like functions ####
 realloc, FunctionModel::REALLOC_LIKE
 strtok, FunctionModel::REALLOC_LIKE
