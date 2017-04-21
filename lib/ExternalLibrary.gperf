@@ -5,6 +5,8 @@ enum class FunctionModel {
   MALLOC_LIKE,
   REALLOC_LIKE,
   MEMCPY_LIKE,
+  ALLOC_ARG0,
+  ALLOC_ARG2,
   CONVERT,
   LLVM_VA_ARG,
   RET_ARG_0,
@@ -217,9 +219,10 @@ strdup, FunctionModel::MALLOC_LIKE
 strndup, FunctionModel::MALLOC_LIKE
 getenv, FunctionModel::MALLOC_LIKE
 memalign, FunctionModel::MALLOC_LIKE
-posix_memalign, FunctionModel::MALLOC_LIKE
+posix_memalign, FunctionModel::ALLOC_ARG0
 pvalloc, FunctionModel::MALLOC_LIKE
 aligned_alloc, FunctionModel::MALLOC_LIKE
+mmap, FunctionModel::MALLOC_LIKE
 #### realloc like functions ####
 realloc, FunctionModel::REALLOC_LIKE
 strtok, FunctionModel::REALLOC_LIKE
@@ -272,9 +275,8 @@ receive, FunctionModel::NOOP
 cgc_receive, FunctionModel::NOOP
 fdwait, FunctionModel::NOOP
 cgc_fdwait, FunctionModel::NOOP
-# we also consider these as NOOP, since we are interested 
-# in malloc granular objects, not in pages.
-allocate, FunctionModel::NOOP
-cgc_allocate, FunctionModel::NOOP
 deallocate, FunctionModel::NOOP
 cgc_deallocate, FunctionModel::NOOP
+# apparently some CBs don't use malloc...
+allocate, FunctionModel::ALLOC_ARG2
+cgc_allocate, FunctionModel::ALLOC_ARG2

@@ -94,7 +94,7 @@ NodeIndex AndersNodeFactory::getValueNodeFor(const Value* val) const
 NodeIndex AndersNodeFactory::getValueNodeForConstant(const llvm::Constant* c) const
 {
 	assert(isa<PointerType>(c->getType()) && "Not a constant pointer!");
-	
+
 	if (isa<ConstantPointerNull>(c) || isa<UndefValue>(c))
     	return getNullPtrNode();
     else if (const GlobalValue* gv = dyn_cast<GlobalValue>(c))
@@ -163,6 +163,7 @@ NodeIndex AndersNodeFactory::getObjectNodeForConstant(const llvm::Constant* c) c
 		}
 	}
 
+  errs() << "cannot handle constant: " << *c << "\n";
 	llvm_unreachable("Unknown constant pointer!");
 	return InvalidIndex;
 }

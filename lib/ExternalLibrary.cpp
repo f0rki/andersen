@@ -22,7 +22,8 @@ bool Andersen::isAllocatorCall(llvm::ImmutableCallSite cs) {
     }
 
     FunctionModel fm = fml->model;
-    return fm == FunctionModel::MALLOC_LIKE || fm == FunctionModel::REALLOC_LIKE;
+    return fm == FunctionModel::MALLOC_LIKE || fm == FunctionModel::REALLOC_LIKE
+      || fm == FunctionModel::ALLOC_ARG0 || fm == FunctionModel::ALLOC_ARG2;
   }
   return false;
 }
@@ -154,6 +155,36 @@ bool Andersen::addConstraintForExternalLibrary(ImmutableCallSite cs, const Funct
           // Normal malloc-like call
           constraints.emplace_back(AndersConstraint::ADDR_OF, ptrIndex, objIndex);
         }
+
+        return true;
+      }
+      break;
+    case FunctionModel::ALLOC_ARG0:
+      // Library calls that might allocate memory.
+      {
+        const Instruction* inst = cs.getInstruction();
+        // Create the obj node
+        NodeIndex objIndex = nodeFactory.createObjectNode(inst);
+
+        auto ptrIndex = nodeFactory.getValueNodeFor(cs.getArgument(0));
+        assert(ptrIndex != AndersNodeFactory::InvalidIndex && "Failed to find arg0 node");
+        constraints.emplace_back(AndersConstraint::STORE, ptrIndex, objIndex);
+
+        return true;
+      }
+      break;
+    case FunctionModel::ALLOC_ARG2:
+      // Library calls that might allocate memory.
+      {
+        const Instruction* inst = cs.getInstruction();
+        // Create the obj node
+        NodeIndex objIndex = nodeFactory.createObjectNode(inst);
+
+        auto ptrIndex = nodeFactory.getValueNodeFor(cs.getArgument(2));
+        assert(ptrIndex != AndersNodeFactory::InvalidIndex && "Failed to find arg2 node");
+
+        errs() << "creating STORE constraint 1: " << *cs.getArgument(2) << " 2: " << *inst << "\n";
+        constraints.emplace_back(AndersConstraint::STORE, ptrIndex, objIndex);
 
         return true;
       }
